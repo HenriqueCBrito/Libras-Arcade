@@ -12,17 +12,17 @@ class LibrasArcade:
         self.root = root
         self.root.title("LIBRAS ARCADE")
         self.root.geometry("1920x1080")
-
-        self.arduino = serial.Serial('COM4', 9600)  # Configure para a porta correta
-        time.sleep(2)  # Aguarde a inicialização do Arduino
-
+        
         self.start_frame = tk.Frame(root)
         self.start_frame.pack(fill="both", expand=True)
+        
+        self.arduino = None  # Inicializa a variável arduino
+        self.start_serial_thread()
 
         self.lives = 4  # Inicializa as vidas
-        self.current_menu_option = 0
-        self.menu_options = ["Viagem", "Escola", "Cotidiano", "Parar"]
+        self.show_start_screen()
 
+        # Lista de perguntas para cada categoria
         self.questions_data = {
             "Viagem": [
                 {"video": "videos/viagem1.mp4", "options": ["A) 'Você último viajar?'", "B) 'Você último lugar viajar?'", "C) 'Qual foi o último lugar que você visitou?'"], "correct_index": 2},
@@ -37,6 +37,7 @@ class LibrasArcade:
                 {"video": "videos/escola3.mp4", "options": ["A) 'Eu amo estudar matemática!'", "B) 'Eu matemática!'", "C) 'Estudar eu matemática!'"], "correct_index": 0},
                 {"video": "videos/escola4.mp4", "options": ["A) 'Qual ser o nome da sua professora?'", "B) 'Qual é o nome da sua professora?'", "C) 'Qual nome sua professora?'"], "correct_index": 1},
                 {"video": "videos/escola5.mp4", "options": ["A) 'Eu quero ser professor de matemática!'", "B) 'Eu ser professor de matemática!'", "C) 'Eu professor de matemática quero ser!'"], "correct_index": 0}
+                
             ],
             "Cotidiano": [
                 {"video": "videos/cotidiano5.mp4", "options": ["A) 'Como foi seu dia hoje?'", "B) 'Foi hoje dia?'", "C) 'Como foi hoje dia?'"], "correct_index": 0},
@@ -46,36 +47,101 @@ class LibrasArcade:
                 {"video": "videos/cotidiano1.mp4", "options": ["A) 'Atividade livre no tempo preferidas quais são?'", "B) 'Quais ser as suas atividades preferidas no tempo livre ?'", "C) 'Quais são as suas atividades preferidas no tempo livre?'"], "correct_index": 2}
             ]
         }
+    def start_serial_thread(self):
+        try:
+            self.arduino = serial.Serial('COM5', 9600, timeout=1)  # Ajuste 'COM3' para a porta correta
+            self.serial_thread = threading.Thread(target=self.read_from_serial)
+            self.serial_thread.daemon = True
+            self.serial_thread.start()
+        except serial.SerialException as e:
+            messagebox.showerror("Erro de Conexão", f"Não foi possível conectar ao Arduino: {e}")
 
-        self.update_menu()
-        self.listen_to_arduino()
-
-    def update_menu(self):
+        
+    def show_start_screen(self):
         for widget in self.start_frame.winfo_children():
             widget.destroy()
 
-        current_option = self.menu_options[self.current_menu_option]
-        label = tk.Label(self.start_frame, text=f"Opção: {current_option}", font=("Arial", 24))
-        label.pack(pady=20)
+        # Carregar e redimensionar a imagem
+        image = Image.open("libras-arcade.png")
+        image = image.resize((500, 500), Image.LANCZOS)  # Redimensiona para 400x400 pixels com método Lanczos
+        photo = ImageTk.PhotoImage(image)
 
-        instruction = tk.Label(self.start_frame, text="Use os botões para navegar e confirmar", font=("Arial", 16))
-        instruction.pack(pady=10)
+        # Exibir a imagem
+        image_label = tk.Label(self.start_frame, image=photo)
+        image_label.image = photo  # Mantém uma referência para evitar a coleta pelo garbage collector
+        image_label.pack(pady=20)
 
-    def listen_to_arduino(self):
-        def listen():
-            while True:
-                if self.arduino.in_waiting > 0:
-                    command = self.arduino.readline().decode().strip()
-                    if command == "left":
-                        self.current_menu_option = (self.current_menu_option - 1) % len(self.menu_options)
-                        self.update_menu()
-                    elif command == "right":
-                        self.current_menu_option = (self.current_menu_option + 1) % len(self.menu_options)
-                        self.update_menu()
-                    elif command == "confirm":
-                        self.handle_option(self.menu_options[self.current_menu_option])
+        # Botão de iniciar
+        start_button = tk.Button(self.start_frame,command = self.show_options, text="Começar", font=("Arial", 20), width=10, height=2)
+        start_button.pack(pady=20)
+        
+    def read_from_serial(self):
+        while True:
+            if self.arduino and self.arduino.in_waiting > 0:
+                line = self.arduino.readline().decode('utf-8').strip()
+                
+                print('aaaaaaaaa: ')
+                print(line)
+                
+                if line == "COMEÇAR":
+                    self.show_options()
+                elif line == "Viagem":
+                    self.handle_option(line)
+                elif line == "Escola":
+                    self.handle_option(line)
+                elif line == "Cotidiano":
+                    self.handle_option(line)
+                elif line == "A0":
+                    selected_Opt = 0
+                    correct_Opt = int(line[1])
+                    self.check_answer(selected_Opt,correct_Opt)
+                elif line == "A1":
+                    selected_Opt = 0
+                    correct_Opt = int(line[1])
+                    self.check_answer(selected_Opt,correct_Opt)
+                elif line == "A2":
+                    selected_Opt = 0
+                    correct_Opt = int(line[1])
+                    self.check_answer(selected_Opt,correct_Opt)
+                elif line == "B0":
+                    selected_Opt = 0
+                    correct_Opt = int(line[1])
+                    self.check_answer(selected_Opt,correct_Opt)
+                elif line == "B1":
+                    selected_Opt = 1
+                    correct_Opt = int(line[1])
+                    self.check_answer(selected_Opt,correct_Opt)
+                elif line == "B2":
+                    selected_Opt = 1
+                    correct_Opt = int(line[1])
+                    self.check_answer(selected_Opt,correct_Opt)
+                elif line == "C0":
+                    selected_Opt = 2
+                    correct_Opt = int(line[1])
+                    self.check_answer(selected_Opt,correct_Opt)
+                elif line == "C1":
+                    selected_Opt = 2
+                    correct_Opt = int(line[1])
+                    self.check_answer(selected_Opt,correct_Opt)
+                elif line == "C2":
+                    selected_Opt = 2
+                    correct_Opt = int(line[1])
+                    self.check_answer(selected_Opt,correct_Opt)
+                elif line == "GAMEOVER":
+                    self.lives-=1
+                    self.show_thank_you_screen()
+                elif line == "Parar":
+                    self.show_thank_you_screen()
+            time.sleep(0.1)  
+        
+    def show_options(self):
+        for widget in self.start_frame.winfo_children():
+            widget.destroy()
 
-        threading.Thread(target=listen, daemon=True).start()
+        options = ["Viagem", "Escola", "Cotidiano", "Parar"]
+        for option in options:
+            button = tk.Button(self.start_frame, text=option, command=lambda opt=option: self.handle_option(opt), font=("Arial",20), width=10, height=2)
+            button.pack(pady=10)
 
     def handle_option(self, option):
         if option == "Parar":
@@ -83,7 +149,7 @@ class LibrasArcade:
         else:
             self.current_question = 0
             self.questions = self.questions_data[option]
-            random.shuffle(self.questions)  # Embaralha as perguntas
+  
             self.show_question()
 
     def show_question(self):
@@ -100,28 +166,10 @@ class LibrasArcade:
 
         self.play_video(video_path)
 
-        self.current_option_index = 0
-        self.correct_index = correct_index
-        self.options = options
-        self.update_question_options()
-
-    def update_question_options(self):
-        for widget in self.start_frame.winfo_children():
-            widget.destroy()
-
-        question = self.questions[self.current_question]
-        video_path = question["video"]
-        options = question["options"]
-
-        self.video_label = tk.Label(self.start_frame)
-        self.video_label.pack(pady=20)
-
-        self.play_video(video_path)
-
         for idx, option in enumerate(options):
-            prefix = "-> " if idx == self.current_option_index else "   "
-            option_label = tk.Label(self.start_frame, text=prefix + option, font=("Arial", 16))
-            option_label.pack(pady=5)
+            button = tk.Button(self.start_frame, text=option, command=lambda idx=idx: self.check_answer(idx, correct_index))
+            print(idx, correct_index)
+            button.pack(pady=5)
 
     def play_video(self, video_path):
         self.video_clip = VideoFileClip(video_path)
@@ -138,6 +186,7 @@ class LibrasArcade:
                     self.video_label.image = photo
                     self.root.update()
 
+                    # Pausa para controlar a taxa de exibição
                     time.sleep(1 / self.video_clip.fps)
 
         threading.Thread(target=stream).start()
@@ -146,21 +195,16 @@ class LibrasArcade:
         if hasattr(self, 'stop_event'):
             self.stop_event.set()
 
-    def check_answer(self, selected_index):
-        self.stop_video()
-
-        if selected_index == self.correct_index:
-            self.arduino.write(b'correct\n')
-            messagebox.showinfo("Resposta", "Correto!")
-        else:
+    def check_answer(self, selected_index, correct_index):
+        self.stop_video()  # Stop the video when an answer is selected
+        
+        if selected_index != correct_index:
             self.lives -= 1
-            self.arduino.write(b'incorrect\n')
             if self.lives == 0:
-                messagebox.showerror("Resposta", "Você perdeu todas as vidas!")
                 self.show_thank_you_screen()
                 return
-            else:
-                messagebox.showerror("Resposta", f"Incorreto! Vidas restantes: {self.lives}")
+            
+                
 
         self.current_question += 1
         if self.current_question < len(self.questions):
@@ -169,27 +213,30 @@ class LibrasArcade:
             self.show_options()
 
     def next_question_with_delay(self):
-        time.sleep(1)
+        time.sleep(1)  # Pausa de 2 segundos entre as perguntas
         self.show_question()
 
     def show_thank_you_screen(self):
-        self.arduino.write(b'stop\n')
         for widget in self.start_frame.winfo_children():
             widget.destroy()
 
+        # Carregar e redimensionar a imagem de agradecimento
         thank_you_image = Image.open("libras-arcade.png")
         thank_you_image = thank_you_image.resize((500, 500), Image.LANCZOS)
         thank_you_photo = ImageTk.PhotoImage(thank_you_image)
 
+        # Exibir a imagem de agradecimento
         thank_you_label_image = tk.Label(self.start_frame, image=thank_you_photo)
-        thank_you_label_image.image = thank_you_photo
+        thank_you_label_image.image = thank_you_photo  # Mantém uma referência para evitar a coleta pelo garbage collector
         thank_you_label_image.pack(pady=20)
         
         thank_you_label_text = tk.Label(self.start_frame, text="Obrigado por jogar o LIBRAS ARCADE!", font=("Arial", 20))
         thank_you_label_text.pack(pady=20)
 
+        # Botão para retornar à tela inicial
         restart_button = tk.Button(self.start_frame, text="Jogar Novamente", command=self.show_start_screen, font=("Arial", 20), width=15, height=2)
         restart_button.pack(pady=20)
+        self.lives = 4
 
 # Inicialização da aplicação
 root = tk.Tk()
