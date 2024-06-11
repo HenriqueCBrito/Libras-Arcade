@@ -25,15 +25,15 @@ class LibrasArcade:
         # Lista de perguntas para cada categoria
         self.questions_data = {
             "Viagem": [
-                {"video": "videos/viagem1.mp4", "options": ["A) 'Você último viajar?'", "B) 'Você último lugar viajar?'", "C) 'Qual foi o último lugar que você visitou?'"], "correct_index": 2},
+                {"video": "videos/viagem1.mp4", "options": ["A) 'Você último viajar?'", "B) 'Você último lugar viajar?'", "C) 'Qual foi o último lugar que você viajou?'"], "correct_index": 2},
                 {"video": "videos/viagem2.mp4", "options": ["A) 'Sonho seu viajar?'", "B) 'Qual viagem dos seus sonhos?'", "C) 'Você sonho lugar viajar?'"], "correct_index": 1},
                 {"video": "videos/viagem3.mp4", "options": ["A) 'Meu país preferido é o Brasil.'", "B) 'Meu país Brasil preferir.'", "C) 'Eu Brasil preferir.'"], "correct_index": 0},
                 {"video": "videos/viagem4.mp4", "options": ["A) 'Qual é sua cidade favorita?'", "B) 'Você cidade favorita ser?'", "C) 'Cidade favorita ser?'"], "correct_index": 0},
                 {"video": "videos/viagem5.mp4", "options": ["A) 'Eu praia amar viajar!'", "B) 'Amo viajar para a praia!' ", "C) 'Praia amar viajar!'" ], "correct_index": 1}
             ],
             "Escola": [
-                {"video": "videos/escola1.mp4", "options": ["A) 'Qual preferida é sua matéria?'", "B) 'Qual matéria preferida?'", "C) 'Qual é a sua matéria preferida?'"], "correct_index": 2},
-                {"video": "videos/escola2.mp4", "options": ["A) 'Você estudou para a prova?'", "B) 'Você estudou prova?'", "C) 'Você prova estudou?' "], "correct_index": 0},
+                {"video": "videos/escola1.mp4", "options": ["A) 'Qual preferida é sua matéria?'", "B) 'Qual ser a sua matéria preferida?'", "C) 'Qual é a sua matéria preferida?'"], "correct_index": 2},
+                {"video": "videos/escola2.mp4", "options": ["A) 'Você estudou para a prova?'", "B) 'Você estudar prova?'", "C) 'Você prova estudou?' "], "correct_index": 0},
                 {"video": "videos/escola3.mp4", "options": ["A) 'Eu amo estudar matemática!'", "B) 'Eu matemática!'", "C) 'Estudar eu matemática!'"], "correct_index": 0},
                 {"video": "videos/escola4.mp4", "options": ["A) 'Qual ser o nome da sua professora?'", "B) 'Qual é o nome da sua professora?'", "C) 'Qual nome sua professora?'"], "correct_index": 1},
                 {"video": "videos/escola5.mp4", "options": ["A) 'Eu quero ser professor de matemática!'", "B) 'Eu ser professor de matemática!'", "C) 'Eu professor de matemática quero ser!'"], "correct_index": 0}
@@ -49,7 +49,7 @@ class LibrasArcade:
         }
     def start_serial_thread(self):
         try:
-            self.arduino = serial.Serial('COM5', 9600, timeout=1)  # Ajuste 'COM3' para a porta correta
+            self.arduino = serial.Serial('COM4', 9600, timeout=1)  # Ajuste 'COM3' para a porta correta
             self.serial_thread = threading.Thread(target=self.read_from_serial)
             self.serial_thread.daemon = True
             self.serial_thread.start()
@@ -68,7 +68,7 @@ class LibrasArcade:
 
         # Exibir a imagem
         image_label = tk.Label(self.start_frame, image=photo)
-        image_label.image = photo  # Mantém uma referência para evitar a coleta pelo garbage collector
+        image_label.image = photo  # Mantideém uma referência para evitar a coleta pelo garbage collector
         image_label.pack(pady=20)
 
         # Botão de iniciar
@@ -140,7 +140,7 @@ class LibrasArcade:
 
         options = ["Viagem", "Escola", "Cotidiano", "Parar"]
         for option in options:
-            button = tk.Button(self.start_frame, text=option, command=lambda opt=option: self.handle_option(opt), font=("Arial",20), width=10, height=2)
+            button = tk.Button(self.start_frame, text=option, command=lambda opt=option: self.handle_option(opt), font=("Arial",30), width=10, height=2)
             button.pack(pady=10)
 
     def handle_option(self, option):
@@ -167,7 +167,7 @@ class LibrasArcade:
         self.play_video(video_path)
 
         for idx, option in enumerate(options):
-            button = tk.Button(self.start_frame, text=option, command=lambda idx=idx: self.check_answer(idx, correct_index))
+            button = tk.Button(self.start_frame, text=option, command=lambda idx=idx: self.check_answer(idx, correct_index), font=("Arial",13))
             print(idx, correct_index)
             button.pack(pady=5)
 

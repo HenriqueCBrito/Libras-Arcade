@@ -25,15 +25,15 @@ class LibrasArcade:
         # Lista de perguntas para cada categoria
         self.questions_data = {
             "Viagem": [
-                {"video": "videos/viagem1.mp4", "options": ["A) 'Você último viajar?'", "B) 'Você último lugar viajar?'", "C) 'Qual foi o último lugar que você visitou?'"], "correct_index": 2},
+                {"video": "videos/viagem1.mp4", "options": ["A) 'Você último viajar?'", "B) 'Você último lugar viajar?'", "C) 'Qual foi o último lugar que você viajou?'"], "correct_index": 2},
                 {"video": "videos/viagem2.mp4", "options": ["A) 'Sonho seu viajar?'", "B) 'Qual viagem dos seus sonhos?'", "C) 'Você sonho lugar viajar?'"], "correct_index": 1},
                 {"video": "videos/viagem3.mp4", "options": ["A) 'Meu país preferido é o Brasil.'", "B) 'Meu país Brasil preferir.'", "C) 'Eu Brasil preferir.'"], "correct_index": 0},
                 {"video": "videos/viagem4.mp4", "options": ["A) 'Qual é sua cidade favorita?'", "B) 'Você cidade favorita ser?'", "C) 'Cidade favorita ser?'"], "correct_index": 0},
                 {"video": "videos/viagem5.mp4", "options": ["A) 'Eu praia amar viajar!'", "B) 'Amo viajar para a praia!' ", "C) 'Praia amar viajar!'" ], "correct_index": 1}
             ],
             "Escola": [
-                {"video": "videos/escola1.mp4", "options": ["A) 'Qual preferida é sua matéria?'", "B) 'Qual matéria preferida?'", "C) 'Qual é a sua matéria preferida?'"], "correct_index": 2},
-                {"video": "videos/escola2.mp4", "options": ["A) 'Você estudou para a prova?'", "B) 'Você estudou prova?'", "C) 'Você prova estudou?' "], "correct_index": 0},
+                {"video": "videos/escola1.mp4", "options": ["A) 'Qual preferida é sua matéria?'", "B) 'Qual ser a sua matéria preferida?'", "C) 'Qual é a sua matéria preferida?'"], "correct_index": 2},
+                {"video": "videos/escola2.mp4", "options": ["A) 'Você estudou para a prova?'", "B) 'Você estudar prova?'", "C) 'Você prova estudou?' "], "correct_index": 0},
                 {"video": "videos/escola3.mp4", "options": ["A) 'Eu amo estudar matemática!'", "B) 'Eu matemática!'", "C) 'Estudar eu matemática!'"], "correct_index": 0},
                 {"video": "videos/escola4.mp4", "options": ["A) 'Qual ser o nome da sua professora?'", "B) 'Qual é o nome da sua professora?'", "C) 'Qual nome sua professora?'"], "correct_index": 1},
                 {"video": "videos/escola5.mp4", "options": ["A) 'Eu quero ser professor de matemática!'", "B) 'Eu ser professor de matemática!'", "C) 'Eu professor de matemática quero ser!'"], "correct_index": 0}
@@ -49,7 +49,7 @@ class LibrasArcade:
         }
     def start_serial_thread(self):
         try:
-            self.arduino = serial.Serial('COM5', 9600, timeout=1)  # Ajuste 'COM3' para a porta correta
+            self.arduino = serial.Serial('COM4', 9600, timeout=1)  # Ajuste 'COM3' para a porta correta
             self.serial_thread = threading.Thread(target=self.read_from_serial)
             self.serial_thread.daemon = True
             self.serial_thread.start()
@@ -91,42 +91,21 @@ class LibrasArcade:
                     self.handle_option(line)
                 elif line == "Cotidiano":
                     self.handle_option(line)
-                elif line == "A0":
+                elif line.startswith("A"):
                     selected_Opt = 0
                     correct_Opt = int(line[1])
                     self.check_answer(selected_Opt,correct_Opt)
-                elif line == "A1":
-                    selected_Opt = 0
-                    correct_Opt = int(line[1])
-                    self.check_answer(selected_Opt,correct_Opt)
-                elif line == "A2":
-                    selected_Opt = 0
-                    correct_Opt = int(line[1])
-                    self.check_answer(selected_Opt,correct_Opt)
-                elif line == "B0":
-                    selected_Opt = 0
-                    correct_Opt = int(line[1])
-                    self.check_answer(selected_Opt,correct_Opt)
-                elif line == "B1":
+                elif line.startswith("B"):
                     selected_Opt = 1
                     correct_Opt = int(line[1])
                     self.check_answer(selected_Opt,correct_Opt)
-                elif line == "B2":
-                    selected_Opt = 1
-                    correct_Opt = int(line[1])
-                    self.check_answer(selected_Opt,correct_Opt)
-                elif line == "C0":
+                elif line.startswith("C"):
                     selected_Opt = 2
                     correct_Opt = int(line[1])
                     self.check_answer(selected_Opt,correct_Opt)
-                elif line == "C1":
-                    selected_Opt = 2
-                    correct_Opt = int(line[1])
-                    self.check_answer(selected_Opt,correct_Opt)
-                elif line == "C2":
-                    selected_Opt = 2
-                    correct_Opt = int(line[1])
-                    self.check_answer(selected_Opt,correct_Opt)
+                elif line == "GAMEOVER":
+                    self.lives-=1
+                    self.show_thank_you_screen()
                 elif line == "Parar":
                     self.show_thank_you_screen()
             time.sleep(0.1)  
@@ -137,7 +116,7 @@ class LibrasArcade:
 
         options = ["Viagem", "Escola", "Cotidiano", "Parar"]
         for option in options:
-            button = tk.Button(self.start_frame, text=option, command=lambda opt=option: self.handle_option(opt), font=("Arial",20), width=10, height=2)
+            button = tk.Button(self.start_frame, text=option, command=lambda opt=option: self.handle_option(opt), font=("Arial",30), width=10, height=2)
             button.pack(pady=10)
 
     def handle_option(self, option):
@@ -156,7 +135,7 @@ class LibrasArcade:
         question = self.questions[self.current_question]
         video_path = question["video"]
         options = question["options"]
-        correct_index = question["correct_index"]
+        self.correct_index = question["correct_index"]
 
         self.video_label = tk.Label(self.start_frame)
         self.video_label.pack(pady=20)
@@ -164,8 +143,8 @@ class LibrasArcade:
         self.play_video(video_path)
 
         for idx, option in enumerate(options):
-            button = tk.Button(self.start_frame, text=option, command=lambda idx=idx: self.check_answer(idx, correct_index))
-            print(idx, correct_index)
+            button = tk.Button(self.start_frame, text=option, command=lambda idx=idx: self.check_answer(idx, self.correct_index), font=("Arial",13))
+            print(idx, self.correct_index)
             button.pack(pady=5)
 
     def play_video(self, video_path):
@@ -195,26 +174,22 @@ class LibrasArcade:
     def check_answer(self, selected_index, correct_index):
         self.stop_video()  # Stop the video when an answer is selected
         
-        if selected_index == correct_index:
-            messagebox.showinfo("Resposta", "Correto!")
-        else:
+        if selected_index != correct_index:
             self.lives -= 1
             if self.lives == 0:
-                messagebox.showerror("Resposta", "Você perdeu todas as vidas!")
                 self.show_thank_you_screen()
                 return
             else:
-                messagebox.showerror("Resposta", f"Incorreto! Vidas restantes: {self.lives}")
-
-        self.current_question += 1
-        if self.current_question < len(self.questions):
-            threading.Thread(target=self.next_question_with_delay).start()
+                self.show_question()  # Show the same question again
         else:
-            self.show_options()
-    
+            self.current_question += 1
+            if self.current_question < len(self.questions):
+                threading.Thread(target=self.next_question_with_delay).start()
+            else:
+                self.show_options()
 
     def next_question_with_delay(self):
-        time.sleep(1)  # Pausa de 2 segundos entre as perguntas
+        time.sleep(1)  # Pausa de 1 segundo entre as perguntas
         self.show_question()
 
     def show_thank_you_screen(self):
